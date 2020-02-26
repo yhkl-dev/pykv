@@ -1,7 +1,6 @@
 import sys
 
-import code
-
+import pykv
 
 OK = 0
 BAD_ARGS = 1
@@ -11,9 +10,9 @@ BAD_KEY = 3
 
 def usage():
     print("Usage:", file=sys.stderr)
-    print("\tpython -m dbdb.tool DBNAME get KEY", file=sys.stderr)
-    print("\tpython -m dbdb.tool DBNAME set KEY VALUE", file=sys.stderr)
-    print("\tpython -m dbdb.tool DBNAME delete KEY", file=sys.stderr)
+    print("\tpython -m pykv.tool DBNAME get KEY", file=sys.stderr)
+    print("\tpython -m pykv.tool DBNAME set KEY VALUE", file=sys.stderr)
+    print("\tpython -m pykv.tool DBNAME delete KEY", file=sys.stderr)
 
 
 def main(argv):
@@ -24,7 +23,7 @@ def main(argv):
     if verb not in {'get', 'set', 'delete'}:
         usage()
         return BAD_VERB
-    db = code.connect(dbname)
+    db = pykv.connect(dbname)
     try:
         if verb == 'get':
             sys.stdout.write(db[key])

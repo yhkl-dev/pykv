@@ -9,9 +9,18 @@ class DataStorage(object):
     INTEGER_FORMAT = "!Q"
     INTEGER_LENGTH = 8
 
-    def __init__(self, filename):
-        self._f = filename
+    def __init__(self, f):
+        self._f = f
         self.locked = False
+        self._ensure_superblock()
+
+    def _ensure_superblock(self):
+        self.lock()
+        self._seek_end()
+        end_address = self._f.tell()
+        if end_address < self.SUPERBLOCK_SIZE:
+            self._f.write(b'\x00' * (self.SUPERBLOCK_SIZE - end_address))
+        self.unlock()
 
     def lock(self):
         if not self.locked:
@@ -26,14 +35,6 @@ class DataStorage(object):
             self._f.flush()
             portalocker.unlock(self._f)
             self.locked = False
-
-    def _ensure_superblock(self):
-        self.lock()
-        self._seek_end()
-        end_address = self._f.tell()
-        if end_address < self.SUPERBLOCK_SIZE:
-            self._f.write(b'\x00' * (self.SUPERBLOCK_SIZE - end_address))
-        self.unlock()
 
     def _seek_end(self):
         self._f.seek(0, os.SEEK_END)
@@ -54,12 +55,6 @@ class DataStorage(object):
         self.lock()
         self._f.write(self._integer_to_bytes(integer))
 
-    def read(self, address):
-        self._f.seek(address)
-        length = self._read_integer()
-        data = self._f.read(length)
-        return data
-
     def write(self, data):
         self.lock()
         self._seek_end()
@@ -67,6 +62,12 @@ class DataStorage(object):
         self._write_integer(len(data))
         self._f.write(data)
         return object_address
+
+    def read(self, address):
+        self._f.seek(address)
+        length = self._read_integer()
+        data = self._f.read(length)
+        return data
 
     def commit_root_address(self, root_address):
         self.lock()
@@ -88,6 +89,3 @@ class DataStorage(object):
     @property
     def closed(self):
         return self._f.closed
-
-if __name__ == '__main__':
-    file_name = '.test'

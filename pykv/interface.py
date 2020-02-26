@@ -1,5 +1,5 @@
-from code.binary_tree import BinaryTree
-from code.physical_layer import DataStorage
+from pykv.binary_tree import BinaryTree
+from pykv.physical_layer import DataStorage
 
 
 class PyKV(object):
